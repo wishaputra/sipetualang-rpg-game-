@@ -64,7 +64,7 @@ export const itemCatalog = [
   {
     id: "bomb",
     name: "Bomb",
-    description: "Deal direct damage.",
+    description: "Deal direct damage. Battle only.",
     type: "damage",
     minDamage: 24,
     maxDamage: 32,
@@ -72,9 +72,16 @@ export const itemCatalog = [
   {
     id: "smoke",
     name: "Smoke Vial",
-    description: "Greatly improves the next escape attempts.",
+    description: "Greatly improves escape attempts. Battle only.",
     type: "smoke",
     turns: 2,
+  },
+  {
+    id: "ancient_core",
+    name: "Ancient Core",
+    description: "A remnant of the seal. Permanently grants +10 Max HP when used.",
+    type: "permhp",
+    hpBonus: 10,
   },
 ];
 
@@ -92,6 +99,13 @@ export const encounters = [
     y: 365,
     radius: 20,
     color: "#b95b4d",
+    patrolRange: 55,
+    dropTable: [
+      { id: "potion", weight: 50 },
+      { id: "bomb", weight: 25 },
+      { id: "smoke", weight: 15 },
+      { id: "mana", weight: 10 },
+    ],
   },
   {
     id: "golem",
@@ -106,6 +120,13 @@ export const encounters = [
     y: 190,
     radius: 26,
     color: "#7b7480",
+    patrolRange: 40,
+    dropTable: [
+      { id: "potion", weight: 40 },
+      { id: "bomb", weight: 35 },
+      { id: "mana", weight: 15 },
+      { id: "smoke", weight: 10 },
+    ],
   },
   {
     id: "shadow",
@@ -120,6 +141,13 @@ export const encounters = [
     y: 318,
     radius: 23,
     color: "#564b8f",
+    patrolRange: 65,
+    dropTable: [
+      { id: "potion", weight: 45 },
+      { id: "smoke", weight: 30 },
+      { id: "bomb", weight: 15 },
+      { id: "mana", weight: 10 },
+    ],
   },
 ];
 
@@ -136,6 +164,11 @@ export const eventEnemy = {
   y: 244,
   radius: 25,
   color: "#332b55",
+  dropTable: [
+    { id: "mana", weight: 45 },
+    { id: "potion", weight: 35 },
+    { id: "smoke", weight: 20 },
+  ],
 };
 
 export const finalBoss = {
@@ -151,6 +184,25 @@ export const finalBoss = {
   y: 116,
   radius: 32,
   color: "#c6a45d",
+  dropTable: [
+    { id: "ancient_core", weight: 100 },
+  ],
+};
+
+export const punishmentBoss = {
+  id: "abyssal_warden",
+  name: "Abyssal Warden",
+  archetype: "Mythical Guardian",
+  maxHp: 280,
+  attackMin: 22,
+  attackMax: 32,
+  dodgeChance: 0.15,
+  hint: "It punishes those who seek freedom without proving their worth.",
+  x: 656,
+  y: 116,
+  radius: 38,
+  color: "#4a0404",
+  dropTable: [],
 };
 
 export const eventTemplates = [

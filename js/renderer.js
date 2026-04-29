@@ -295,6 +295,14 @@ export function draw() {
     );
   }
 
+  if (state.phase === "alt_ending") {
+    ctx.fillStyle = state.endingStage === 1 ? "rgba(74, 4, 4, 0.45)" : "rgba(74, 4, 4, 0.70)";
+    ctx.fillRect(0, 0, cave.width, cave.height);
+    ctx.fillStyle = "#f2f4f8";
+    ctx.font = "bold 28px sans-serif";
+    ctx.fillText("The New Guardian", 240, 248);
+  }
+
   if (state.phase === "defeat") {
     ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
     ctx.fillRect(0, 0, cave.width, cave.height);

@@ -83,10 +83,10 @@ export function restoreMp(amount) {
 }
 
 export function inventorySummary() {
-  const parts = itemCatalog.map(
-    (item) => `${item.name.replace("Health ", "")} x${state.player.inventory[item.id] || 0}`
-  );
-  return `Inventory: ${parts.join(" | ")}`;
+  const parts = itemCatalog
+    .filter((item) => (state.player.inventory[item.id] || 0) > 0)
+    .map((item) => `${item.name.replace("Health ", "")} x${state.player.inventory[item.id]}`);
+  return parts.length > 0 ? `Inventory: ${parts.join(" | ")}` : "Inventory: empty";
 }
 
 export function updateHud() {
@@ -97,22 +97,28 @@ export function updateHud() {
   refs.playerMpText.textContent = `MP ${state.player.mp} / ${state.player.maxMp}`;
   refs.playerMpBar.style.width = `${playerMpPercent}%`;
   refs.potionText.textContent = inventorySummary();
-  refs.modeBadge.textContent =
-    state.phase === "battle"
-      ? "Battle Mode"
-      : state.phase === "event"
-        ? "Event"
-        : state.phase === "ending"
-          ? "Truth Revealed"
-          : state.phase === "defeat"
-            ? "Defeat"
-            : state.phase === "intro"
-              ? "Intro"
-              : "Exploration Mode";
+  if (state.inventoryOpen) {
+    refs.modeBadge.textContent = "Inventory";
+  } else {
+    refs.modeBadge.textContent =
+      state.phase === "battle"
+        ? "Battle Mode"
+        : state.phase === "event"
+          ? "Event"
+          : state.phase === "ending"
+            ? "Truth Revealed"
+            : state.phase === "alt_ending"
+              ? "Guardian's Vigil"
+              : state.phase === "defeat"
+                ? "Defeat"
+                : state.phase === "intro"
+                  ? "Intro"
+                  : "Exploration Mode";
+  }
 
   refs.controlHint.textContent =
     state.phase === "explore"
-      ? "WASD / Arrow Keys to move. Touch markers, monsters, or the exit."
+      ? "WASD / Arrows to move \u00b7 [I] Open Inventory \u00b7 Touch markers, monsters, or the exit."
       : state.phase === "battle"
         ? "Choose commands from the battle menu."
         : state.phase === "event"

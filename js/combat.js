@@ -5,6 +5,8 @@ import { triggerDialogue } from "./dialogue.js";
 import { triggerFlash } from "./effects.js";
 import { randomInt } from "./utils.js";
 import { log, refs, restoreMp, setActions, showDamage, spendMp, updateHud } from "./ui.js";
+import { rollDrop, applyDrop, getItemName } from "./drops.js";
+import { closeInventoryMenu } from "./inventory.js";
 
 export function renderIntro() {
   state.phase = "intro";
@@ -19,6 +21,8 @@ export function renderIntro() {
 
 export function startExploration(message) {
   ensureAudio();
+  // Close inventory overlay if it was somehow left open
+  closeInventoryMenu();
   state.phase = "explore";
   state.enemy = null;
   state.activeMonsterId = null;
@@ -33,6 +37,8 @@ export function startExploration(message) {
 }
 
 export function startBattle(enemyTemplate, source = "monster") {
+  // Close inventory if open when a battle starts
+  closeInventoryMenu();
   state.phase = "battle";
   state.keys.clear();
   state.enemySource = source;
@@ -44,11 +50,13 @@ export function startBattle(enemyTemplate, source = "monster") {
   };
   refs.sceneTitle.textContent = "Battle";
   refs.messageText.textContent =
-    enemyTemplate.id === "seal_keeper"
-      ? "Why does the light feel... wrong? The Seal Keeper descends before the exit, and the light behind it bends away from you."
-      : source === "event"
-        ? `${enemyTemplate.name} unfolds from the whisper.`
-        : `${enemyTemplate.name} attacks as the knight gets too close.`;
+    enemyTemplate.id === "abyssal_warden"
+      ? "A powerful presence blocks your path\u2026 The air grows freezing cold as the Abyssal Warden rises from the darkness."
+      : enemyTemplate.id === "seal_keeper"
+        ? "Why does the light feel... wrong? The Seal Keeper descends before the exit, and the light behind it bends away from you."
+        : source === "event"
+          ? `${enemyTemplate.name} unfolds from the whisper.`
+          : `${enemyTemplate.name} attacks as the knight gets too close.`;
   refs.battleLog.replaceChildren();
   log(`${enemyTemplate.name} appears: ${enemyTemplate.archetype}.`);
   playTone(130, 0.18, "sawtooth", 0.045);
@@ -61,7 +69,7 @@ export function renderBattleActions() {
     { label: "Attack", className: "danger", onClick: basicAttack },
     { label: "Skill", className: "blue", onClick: renderSkillMenu },
     { label: "Item", className: "green", onClick: renderItemMenu },
-    { label: "Run", disabled: state.enemy?.id === "seal_keeper", onClick: attemptRun },
+    { label: "Run", disabled: state.enemy?.id === "seal_keeper" || state.enemy?.id === "abyssal_warden", onClick: attemptRun },
   ]);
 }
 
@@ -216,6 +224,19 @@ export function useItem(item) {
     playTone(115, 0.18, "sine", 0.035);
     updateHud();
     enemyTurn();
+    return;
+  }
+
+  // Ancient Core — usable in battle too
+  if (item.type === "permhp") {
+    state.player.maxHp += item.hpBonus;
+    state.player.hp = Math.min(state.player.maxHp, state.player.hp + item.hpBonus);
+    refs.messageText.textContent = `The Ancient Core crumbles... Max HP permanently +${item.hpBonus}.`;
+    log(`Ancient Core: Max HP +${item.hpBonus}.`);
+    showDamage(`+${item.hpBonus} MaxHP`, "player");
+    playTone(440, 0.2, "sine", 0.05);
+    updateHud();
+    enemyTurn();
   }
 }
 
@@ -232,6 +253,11 @@ export function attemptRun() {
   if (state.enemy.id === "seal_keeper") {
     refs.messageText.textContent = "The Seal Keeper bars the exit. There is nowhere left to run.";
     log("Run: impossible during the final battle.");
+    return;
+  }
+  if (state.enemy.id === "abyssal_warden") {
+    refs.messageText.textContent = "The Abyssal Warden's gaze paralyses you. Escape is impossible.";
+    log("Run: impossible against the Warden.");
     return;
   }
 
@@ -355,6 +381,11 @@ export function markActiveThreatCleared() {
     return;
   }
 
+  if (state.enemySource === "punishment") {
+    state.punishmentDefeated = true;
+    return;
+  }
+
   const monster = state.monsters.find((candidate) => candidate.id === state.activeMonsterId);
   if (monster) {
     monster.defeated = true;
@@ -372,34 +403,76 @@ export function applyProgression() {
   state.player.hp = Math.min(state.player.maxHp, state.player.hp + 10);
   state.player.maxMp += 2;
   state.player.mp = Math.min(state.player.maxMp, state.player.mp + 8);
-  log("Progress: ATK +1, Max HP +5, Max MP +2, HP +10, MP +8.");
+  log("Stat boost: ATK +1, Max HP +5, Max MP +2, HP +10, MP +8.");
 }
+
+// ---------------------------------------------------------------------------
+// Win battle — staged reward sequence
+// ---------------------------------------------------------------------------
 
 export function winBattle() {
   const defeatedName = state.enemy.name;
-  const defeatedBoss = state.enemy.id === "seal_keeper";
+  const defeatedId = state.enemy.id;
+  const defeatedBoss = state.enemy.id === "seal_keeper" || state.enemy.id === "abyssal_warden";
+  const dropTable = state.enemy.dropTable || [];
+
   markActiveThreatCleared();
+  applyProgression();
+
   state.enemy = null;
   state.activeMonsterId = null;
   state.activeEventId = null;
   state.enemySource = "monster";
-  state.busy = false;
+  state.busy = true; // keep buttons disabled during the sequence
+
   refs.sceneTitle.textContent = "Victory";
   refs.messageText.textContent = `${defeatedName} is defeated. The cracked sword drinks the echo of the battle.`;
   log(`${defeatedName} defeated.`);
-  applyProgression();
   playTone(360, 0.18, "triangle", 0.04);
-  setActions([
-    {
-      label: defeatedBoss ? "Step Into Light" : "Return to Exploration",
-      className: "primary",
-      onClick: () =>
-        defeatedBoss
-          ? startEndingSequence()
-          : startExploration("The cave is quiet again. You feel stronger, but less human."),
-    },
-  ]);
+  setActions([]); // clear buttons during sequence
   updateHud();
+
+  // ── Step 1 (300 ms): suspense message ────────────────────────────────────
+  window.setTimeout(() => {
+    refs.messageText.textContent = "Something stirs in the dust…";
+  }, 300);
+
+  // ── Step 2 (800 ms): roll and reveal drop ────────────────────────────────
+  window.setTimeout(() => {
+    const droppedId = rollDrop(dropTable, defeatedBoss);
+
+    if (droppedId) {
+      applyDrop(droppedId);
+      const itemName = getItemName(droppedId);
+      refs.messageText.textContent = `You obtained: ${itemName}!`;
+      log(`Drop: ${itemName} obtained.`);
+      showDamage(`+${itemName}`, "player");
+      playTone(520, 0.16, "sine", 0.04);
+      updateHud();
+    } else {
+      refs.messageText.textContent = "Nothing was left behind.";
+    }
+  }, 800);
+
+  // ── Step 3 (1300 ms): show action button ─────────────────────────────────
+  window.setTimeout(() => {
+    state.busy = false;
+    setActions([
+      {
+        label: defeatedBoss ? "Step Forward" : "Return to Exploration",
+        className: "primary",
+        onClick: () => {
+          if (defeatedId === "seal_keeper") {
+            startEndingSequence();
+          } else if (defeatedId === "abyssal_warden") {
+            startAlternateEndingSequence();
+          } else {
+            startExploration("The cave is quiet again. You feel stronger, but less human.");
+          }
+        },
+      },
+    ]);
+  }, 1300);
 }
 
 export function renderDefeat() {
@@ -442,6 +515,30 @@ export function renderEnding() {
   }
   playTone(70, 0.5, "sawtooth", 0.05);
   setActions([{ label: "Play Again", className: "primary", onClick: resetGame }]);
+  updateHud();
+}
+
+export function startAlternateEndingSequence() {
+  state.phase = "alt_ending";
+  state.endingStage = 1;
+  refs.sceneTitle.textContent = "The Guardian's Rebirth";
+  refs.messageText.textContent = "The Abyssal Warden crumbles into ash. The air grows heavy and still.";
+  setActions([]);
+  updateHud();
+  playTone(85, 0.45, "sine", 0.04);
+  window.setTimeout(renderAlternateEnding, 1300);
+}
+
+export function renderAlternateEnding() {
+  state.phase = "alt_ending";
+  state.endingStage = 2;
+  state.enemy = null;
+  refs.sceneTitle.textContent = "The Guardian's Rebirth";
+  refs.messageText.textContent =
+    "You have proven your strength\u2026 But strength alone cannot grant you freedom. The cave accepts you\u2026 as its new guardian. You are no longer the one who seeks escape\u2026 You are the one who keeps others from leaving.";
+  log("Alternate Ending: the knight becomes the guardian.");
+  playTone(65, 0.5, "sawtooth", 0.05);
+  setActions([{ label: "Embrace the Dark", className: "primary", onClick: resetGame }]);
   updateHud();
 }
 
