@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Si Petualang - Cave RPG Demo</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <section class="stage" aria-label="Game scene">
+        <div class="canvas-wrap">
+          <canvas
+            id="gameCanvas"
+            width="720"
+            height="520"
+            aria-label="2D cave exploration area"
+          ></canvas>
+          <div class="mode-badge" id="modeBadge">Intro</div>
+          <div class="control-hint" id="controlHint">WASD / Arrow Keys to move</div>
+          <div class="damage-pop hidden" id="damagePop"></div>
+        </div>
+      </section>
+
+      <section class="hud" aria-label="Game controls and status">
+        <div class="status-grid">
+          <article class="status-panel">
+            <div class="status-heading">
+              <span>Knight</span>
+              <strong id="playerHpText">HP 100 / 100</strong>
+            </div>
+            <div class="hp-bar" aria-hidden="true">
+              <div id="playerHpBar"></div>
+            </div>
+            <div class="mp-bar" aria-hidden="true">
+              <div id="playerMpBar"></div>
+            </div>
+            <p id="playerMpText">MP 35 / 35</p>
+            <p id="potionText">Inventory: Potion x2 | Bomb x1 | Smoke Vial x1</p>
+          </article>
+
+          <article class="status-panel enemy-panel" id="enemyPanel">
+            <div class="status-heading">
+              <span id="enemyName">No enemy</span>
+              <strong id="enemyHpText">HP 0 / 0</strong>
+            </div>
+            <div class="hp-bar enemy" aria-hidden="true">
+              <div id="enemyHpBar"></div>
+            </div>
+            <p id="enemyHint">Explore the cave to find enemies.</p>
+          </article>
+        </div>
+
+        <div class="message-box">
+          <h1 id="sceneTitle">Dark Cave</h1>
+          <p id="messageText"></p>
+        </div>
+
+        <div class="actions" id="actions"></div>
+
+        <ol class="battle-log" id="battleLog" aria-label="Battle log"></ol>
+      </section>
+    </main>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>

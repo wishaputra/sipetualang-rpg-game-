@@ -1,0 +1,231 @@
+export const playerTemplate = {
+  name: "Knight",
+  maxHp: 95,
+  hp: 95,
+  maxMp: 35,
+  mp: 35,
+  attack: 4,
+  blessing: false,
+  smokeTurns: 0,
+  guard: false,
+  inventory: {
+    potion: 2,
+    mana: 1,
+    bomb: 1,
+    smoke: 1,
+  },
+};
+
+export const skills = [
+  {
+    id: "fireball",
+    name: "Fireball",
+    description: "High fire damage.",
+    type: "damage",
+    mpCost: 10,
+    minDamage: 22,
+    maxDamage: 30,
+  },
+  {
+    id: "ember_brand",
+    name: "Ember Brand",
+    description: "Lower damage, applies burn for 3 turns.",
+    type: "burn",
+    mpCost: 8,
+    minDamage: 8,
+    maxDamage: 12,
+    burnDamage: 6,
+    burnTurns: 3,
+  },
+  {
+    id: "guard",
+    name: "Guard",
+    description: "Reduce the next enemy attack.",
+    type: "guard",
+    mpCost: 4,
+  },
+];
+
+export const itemCatalog = [
+  {
+    id: "potion",
+    name: "Health Potion",
+    description: "Restore 30 HP.",
+    type: "heal",
+    heal: 30,
+  },
+  {
+    id: "mana",
+    name: "Mana Potion",
+    description: "Restore 20 MP.",
+    type: "mp",
+    restoreMp: 20,
+  },
+  {
+    id: "bomb",
+    name: "Bomb",
+    description: "Deal direct damage.",
+    type: "damage",
+    minDamage: 24,
+    maxDamage: 32,
+  },
+  {
+    id: "smoke",
+    name: "Smoke Vial",
+    description: "Greatly improves the next escape attempts.",
+    type: "smoke",
+    turns: 2,
+  },
+];
+
+export const encounters = [
+  {
+    id: "goblin",
+    name: "Cave Goblin",
+    archetype: "Fast but weak",
+    maxHp: 38,
+    attackMin: 7,
+    attackMax: 10,
+    dodgeChance: 0.05,
+    hint: "Fast but weak. It attacks with nervous speed.",
+    x: 292,
+    y: 365,
+    radius: 20,
+    color: "#b95b4d",
+  },
+  {
+    id: "golem",
+    name: "Small Golem",
+    archetype: "Tanky but slow",
+    maxHp: 82,
+    attackMin: 10,
+    attackMax: 15,
+    dodgeChance: 0,
+    hint: "Tanky and slow. Fire and bombs help break its shell.",
+    x: 386,
+    y: 190,
+    radius: 26,
+    color: "#7b7480",
+  },
+  {
+    id: "shadow",
+    name: "Cave Shadow",
+    archetype: "Evasive",
+    maxHp: 52,
+    attackMin: 8,
+    attackMax: 13,
+    dodgeChance: 0.28,
+    hint: "Evasive. It may dodge direct attacks.",
+    x: 602,
+    y: 318,
+    radius: 23,
+    color: "#564b8f",
+  },
+];
+
+export const eventEnemy = {
+  id: "whisper_shadow",
+  name: "Whisper Shadow",
+  archetype: "Ambush",
+  maxHp: 72,
+  attackMin: 11,
+  attackMax: 17,
+  dodgeChance: 0.18,
+  hint: "A stronger enemy drawn by curiosity.",
+  x: 520,
+  y: 244,
+  radius: 25,
+  color: "#332b55",
+};
+
+export const finalBoss = {
+  id: "seal_keeper",
+  name: "Seal Keeper",
+  archetype: "Final guardian",
+  maxHp: 118,
+  attackMin: 12,
+  attackMax: 18,
+  dodgeChance: 0.08,
+  hint: "It protects the exit and remembers what you are.",
+  x: 656,
+  y: 116,
+  radius: 32,
+  color: "#c6a45d",
+};
+
+export const eventTemplates = [
+  {
+    id: "skeleton",
+    type: "skeleton",
+    name: "Fallen Knight",
+    x: 178,
+    y: 392,
+    radius: 22,
+    color: "#d4d0bd",
+  },
+  {
+    id: "torch",
+    type: "torch",
+    name: "Dim Torch",
+    x: 318,
+    y: 252,
+    radius: 20,
+    color: "#f0bf4c",
+  },
+  {
+    id: "sound",
+    type: "sound",
+    name: "Strange Sound",
+    x: 528,
+    y: 246,
+    radius: 24,
+    color: "#58a6ff",
+  },
+];
+
+export const memoryTemplates = [
+  {
+    id: "chains",
+    x: 92,
+    y: 174,
+    radius: 19,
+    text: "Memory: Flashes of fire... chains... screaming.",
+  },
+  {
+    id: "oath",
+    x: 350,
+    y: 118,
+    radius: 19,
+    text: "Memory: Your own voice says, Seal me in. Do not let me wake.",
+  },
+  {
+    id: "crown",
+    x: 642,
+    y: 430,
+    radius: 19,
+    text: "Memory: A black crown cracks in your hands. Something inside you laughs.",
+  },
+];
+
+export const cave = {
+  width: 720,
+  height: 520,
+  exit: { x: 648, y: 66, w: 48, h: 72 },
+  walls: [
+    { x: 0, y: 0, w: 720, h: 30 },
+    { x: 0, y: 490, w: 720, h: 30 },
+    { x: 0, y: 0, w: 30, h: 520 },
+    { x: 690, y: 0, w: 30, h: 520 },
+    { x: 102, y: 86, w: 182, h: 58 },
+    { x: 398, y: 84, w: 156, h: 54 },
+    { x: 134, y: 220, w: 116, h: 120 },
+    { x: 455, y: 278, w: 118, h: 130 },
+    { x: 304, y: 420, w: 205, h: 42 },
+  ],
+  rocks: [
+    { x: 84, y: 408, r: 18 },
+    { x: 314, y: 208, r: 14 },
+    { x: 613, y: 392, r: 20 },
+    { x: 567, y: 92, r: 13 },
+  ],
+};
